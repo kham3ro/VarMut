@@ -4,8 +4,8 @@ const fs = require('fs')
 const path = require("path");
 // Internal modules
 const utils = require('./utils');
-//Sumo static conf
-const { sumoLogTxtPath, mutationsJsonPath, mutOpsConfigPath } = utils.staticConf;
+//varmut static conf
+const { varmutLogTxtPath, mutationsJsonPath, mutOpsConfigPath } = utils.staticConf;
 const mutOpsConfig = require(mutOpsConfigPath)
 
 
@@ -47,7 +47,7 @@ class Reporter {
     console.log("\n" + (chalk.yellow("Running tests ") + "for mutant " + this.chalkMutant(mutant)));
   }
   /**
-   * Logs the setup details and saves the project configuration to sumo-log.txt.
+   * Logs the setup details and saves the project configuration to varmut-log.txt.
    * @param {string} contractsDir - The contracts directory.
    * @param {string} testDir - The tests directory.
    * @param {string} buildDir - The build directory.
@@ -59,13 +59,13 @@ class Reporter {
     console.log("Test directory: " + testDir);
     console.log("Build directory (" + testingFramework[0] + "): " + buildDir + "\n");
 
-    fs.writeFileSync(sumoLogTxtPath, ">>> PROJECT CONFIGURATION \n\nTesting framework: " + testingFramework + "\nContracts directory: " + contractsDir +
+    fs.writeFileSync(varmutLogTxtPath, ">>> PROJECT CONFIGURATION \n\nTesting framework: " + testingFramework + "\nContracts directory: " + contractsDir +
       "\nTest directory: " + testDir + "\nBuild directory (" + testingFramework[0] + "): " + buildDir + "\n\n", function (err) {
         if (err) return console.log(err);
       });
   }
   /**
-   * Prints the files under test and saves them to sumo-log.txt.
+   * Prints the files under test and saves them to varmut-log.txt.
    * @param {string[]} contracts the list of contracts to be mutated
    * @param {string[]} tests the list of tests to be run
    * @param {string[]} testingFrameworks - The list of testing frameworks used within the SUT
@@ -81,7 +81,7 @@ class Reporter {
     }
     else {
       console.log("Contracts to be mutated : (" + numContracts + "):");
-      fs.appendFileSync(sumoLogTxtPath, ">>> SELECTED FILES \n\nContracts to be mutated : (" + numContracts + "):\n", function (err) {
+      fs.appendFileSync(varmutLogTxtPath, ">>> SELECTED FILES \n\nContracts to be mutated : (" + numContracts + "):\n", function (err) {
         if (err) return console.log(err);
       });
 
@@ -89,7 +89,7 @@ class Reporter {
         console.log(
           "\t" + path.parse(c).dir + "/" + chalk.bold(path.basename(c))
         );
-        fs.appendFileSync(sumoLogTxtPath, "\t" + "- " + path.parse(c).dir + "/" + path.basename(c) + "\n", function (err) {
+        fs.appendFileSync(varmutLogTxtPath, "\t" + "- " + path.parse(c).dir + "/" + path.basename(c) + "\n", function (err) {
           if (err) return console.log(err);
         });
       });
@@ -99,7 +99,7 @@ class Reporter {
     if (numTests == 0) console.log("Tests to be run : " + chalk.red("None"));
     else {
       console.log("Tests to be run : (" + numTests + "):");
-      fs.appendFileSync(sumoLogTxtPath, "Tests to be run : (" + numTests + "):\n", function (err) {
+      fs.appendFileSync(varmutLogTxtPath, "Tests to be run : (" + numTests + "):\n", function (err) {
         if (err) return console.log(err);
       });
 
@@ -107,7 +107,7 @@ class Reporter {
         console.log(
           "\t" + path.parse(t).dir + "/" + chalk.bold(path.basename(t))
         );
-        fs.appendFileSync(sumoLogTxtPath, "\t" + "- " + path.parse(t).dir + "/" + path.basename(t) + '\n', function (err) {
+        fs.appendFileSync(varmutLogTxtPath, "\t" + "- " + path.parse(t).dir + "/" + path.basename(t) + '\n', function (err) {
           if (err) return console.log(err);
         });
 
@@ -121,7 +121,7 @@ class Reporter {
     }
 
     if (numContracts > 0) {
-      fs.appendFileSync(sumoLogTxtPath, "\n\n>>> GENERATED MUTANTS \n", function (err) {
+      fs.appendFileSync(varmutLogTxtPath, "\n\n>>> GENERATED MUTANTS \n", function (err) {
         if (err) return console.log(err);
       });
     }
@@ -140,9 +140,9 @@ class Reporter {
    * @param {number} genTime the mutant generation time
    */
   logLookupSummary(mutations, genTime) {
-    const lookup = mutations.length + " mutation(s) found in " + genTime + " seconds\n"; // + "Results saved to /sumo/results/report-html\n";
+    const lookup = mutations.length + " mutation(s) found in " + genTime + " seconds\n"; // + "Results saved to /varmut/results/report-html\n";
 
-    fs.appendFileSync(sumoLogTxtPath, "\n\n>>> GENERATION SUMMARY \n\n" + lookup + "\n", function (err) {
+    fs.appendFileSync(varmutLogTxtPath, "\n\n>>> GENERATION SUMMARY \n\n" + lookup + "\n", function (err) {
       if (err) return console.log(err);
     });
 
@@ -172,9 +172,9 @@ class Reporter {
     const mutationScore = ((killedMutants / validMutants) * 100).toFixed(2);
 
     console.log("\n" + chalk.yellow.bold("Mutation Testing completed in " + timeString + " 👋"));
-    //console.log("\nTest Summary can be viewed on sumo/results/report-html/index.html");
+    //console.log("\nTest Summary can be viewed on varmut/results/report-html/index.html");
     console.log(
-      "SuMo generated " + totalMutants + " mutants: \n" +
+      "varmut generated " + totalMutants + " mutants: \n" +
       "- " + liveMutants + " live; \n" +
       "- " + killedMutants + " killed; \n" +
       "- " + stillbornMutants + " stillborn; \n" +
@@ -212,7 +212,7 @@ class Reporter {
       printString = printString + "\n --- Timed-Out: " + JSON.stringify(this.timedout.map(m => m.hash()).join(", "));
 
     printString = printString + "\n\n MUTATION SCORE = " + mutationScore;
-    fs.appendFileSync(sumoLogTxtPath, printString + "\n\n- " + totalMutants + " mutant(s) tested in " + timeString + "." + "\n- SuMo test done.", { "flags": "a" }, function (err) {
+    fs.appendFileSync(varmutLogTxtPath, printString + "\n\n- " + totalMutants + " mutant(s) tested in " + timeString + "." + "\n- varmut test done.", { "flags": "a" }, function (err) {
       if (err) return console.log(err);
     });
   }
@@ -255,19 +255,19 @@ class Reporter {
 
   /**
    * Saves various reports from the mutant generation process
-   * (sumo-log.txt, mutations.json)
+   * (varmut-log.txt, mutations.json)
    * @param {Array} mutations - The generated mutations
    */
   saveMutantGenerationReports(mutations) {
-    this.saveGeneratedMutationsSumoLogTxt(mutations);
+    this.saveGeneratedMutationsvarmutLogTxt(mutations);
     this.saveGeneratedMutationsJson(mutations)
   }
 
   /**
-   * Logs the generated mutants to sumo-log.txt
+   * Logs the generated mutants to varmut-log.txt
    * @param {Array} mutations - The generated mutations
    */
-  saveGeneratedMutationsSumoLogTxt(mutations) {
+  saveGeneratedMutationsvarmutLogTxt(mutations) {
 
     const groupedMutants = {}; // Group mutants by file
     mutations.forEach(m => {
@@ -286,7 +286,7 @@ class Reporter {
       });
     }
 
-    fs.appendFileSync(sumoLogTxtPath, mutantString, { "flags": "a" }, function (err) {
+    fs.appendFileSync(varmutLogTxtPath, mutantString, { "flags": "a" }, function (err) {
       if (err) return console.log(err);
     });
   }

@@ -5,7 +5,7 @@ const rootDir = appRoot;
 const utils = require("../utils");
 const mutOpsConfigPath = utils.staticConf.mutOpsConfigPath
 const mutOpsConfig = require(mutOpsConfigPath)
-const config = require(rootDir + '/sumo-config')
+const config = require(rootDir + '/varmut-config')
 
 
 //Init operator version

@@ -32,9 +32,9 @@ function generateReport() {
     fs.writeFileSync(fullPath, content);
   }
 
-  // SuMo logo
-  const sourcePngPath = path.join(utils.staticConf.sumoInstallPath, 'src', 'resources', 'sumo-logo.png');
-  const destinationPngPath = path.join(resultsDir, 'resources', 'sumo-logo.png');
+  // varmut logo
+  const sourcePngPath = path.join(utils.staticConf.varmutInstallPath, 'src', 'resources', 'varmut-logo.jpg');
+  const destinationPngPath = path.join(resultsDir, 'resources', 'varmut-logo.jpg');
   fs.mkdirSync(path.dirname(destinationPngPath), { recursive: true });
   fs.copyFileSync(sourcePngPath, destinationPngPath);
 
@@ -51,15 +51,15 @@ function generateMainPage() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuMo Report</title>
+  <title>varmut Report</title>
   <link rel="stylesheet" href="css/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
- <link rel="icon" href="resources/sumo-logo.png" type="image/x-icon">
+ <link rel="icon" href="resources/varmut-logo.jpg" type="image/x-icon">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>SuMo Report</h1>
+      <h1>varmut Report</h1>
       <p>Mutation testing results for your Smart Contracts.</p>
     </header>
 
@@ -119,7 +119,7 @@ function generateContractTemplate() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contract Details</title>
   <link rel="stylesheet" href="css/styles.css">
- <link rel="icon" href="resources/sumo-logo.png" type="image/x-icon">
+ <link rel="icon" href="resources/varmut-logo.png" type="image/x-icon">
 </head>
 <body>
   <div class="container">

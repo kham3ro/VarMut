@@ -58,6 +58,6 @@ build/Release
 .yarn-integrity
 
 # ==========================================
-# Benchmark Tools (SuMo / Vertigo temp files)
+# Benchmark Tools (VarMut temp files)
 # ==========================================
-.sumo
+.varmut

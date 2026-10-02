@@ -7,22 +7,22 @@ const glob = require("glob");
 const os = require("os");
 const path = require("path");
 const rimraf = require('rimraf');
-// SuMo configuration
+// varmut configuration
 const rootDir = appRoot.toString().replaceAll("\\", "/");
-const libSumoDir = path.resolve(__dirname, '..');
-const sumoConfig = require(rootDir + "/sumo-config");
+const libvarmutDir = path.resolve(__dirname, '..');
+const varmutConfig = require(rootDir + "/varmut-config");
 
 const staticConf = {
-  sumoDir: rootDir + "/sumo",
-  sumoInstallPath: libSumoDir,
-  baselineDir: rootDir + "/sumo/baseline",
-  historyDir: rootDir + "/sumo/history",
-  mutantsDir: rootDir + "/sumo/results/mutants",
-  reportHtmlDir: libSumoDir + "/src/report-html",
-  resultsDir: rootDir + "/sumo/results",
-  mutationsJsonPath: rootDir + "/sumo/results/mutations.json",
-  mutOpsConfigPath: libSumoDir + "/src/operators.config.json",
-  sumoLogTxtPath: rootDir + "/sumo/results/sumo-log.txt",
+  varmutDir: rootDir + "/varmut",
+  varmutInstallPath: libvarmutDir,
+  baselineDir: rootDir + "/varmut/baseline",
+  historyDir: rootDir + "/varmut/history",
+  mutantsDir: rootDir + "/varmut/results/mutants",
+  reportHtmlDir: libvarmutDir + "/src/report-html",
+  resultsDir: rootDir + "/varmut/results",
+  mutationsJsonPath: rootDir + "/varmut/results/mutations.json",
+  mutOpsConfigPath: libvarmutDir + "/src/operators.config.json",
+  varmutLogTxtPath: rootDir + "/varmut/results/varmut-log.txt",
   contractsGlob: '/**/*.sol',
   testsGlob: '/**/*.{js,sol,ts,py}',
   packageManagerGlob: ['/package-lock.json', '/yarn.lock'],
@@ -55,7 +55,7 @@ function restore() {
       if (err) throw err;
 
       for (const file of files) {
-        let relativeFilePath = file.split("sumo/baseline/contracts")[1];
+        let relativeFilePath = file.split("varmut/baseline/contracts")[1];
         let fileDir = path.dirname(relativeFilePath);
         fs.mkdir(contractsDir + fileDir, { recursive: true }, function (err) {
           if (err) return cb(err);
@@ -72,7 +72,7 @@ function restore() {
       if (err) throw err;
 
       for (const file of files) {
-        let relativeFilePath = file.split("sumo/baseline/test")[1];
+        let relativeFilePath = file.split("varmut/baseline/test")[1];
         let fileDir = path.dirname(relativeFilePath);
         fs.mkdir(testDir + fileDir, { recursive: true }, function (err) {
           if (err) return cb(err);
@@ -150,28 +150,28 @@ function getPackageManager() {
 }
 
 /**
- * Checks the testing framework used by the SUT. If a testing framework is specified in the sumo-config.js, only 
- * that framework will be used. If "auto" is specified, SuMo will looks for the test configuration files to determine
+ * Checks the testing framework used by the SUT. If a testing framework is specified in the varmut-config.js, only 
+ * that framework will be used. If "auto" is specified, varmut will looks for the test configuration files to determine
  * which frameworks should be used. In case multiple config files are present, both frameworks will be used.
  * @returns {string[]} An array containing the detected testing framework(s).
  * @throws {Error} When a valid testing framework cannot be detected.
  */
 function getTestingFrameworks() {
-  const sumoConfigTestingFramework = sumoConfig.testingFramework;
+  const varmutConfigTestingFramework = varmutConfig.testingFramework;
   const validTestingFrameworks = ['auto', 'truffle', 'hardhat', 'forge', 'brownie', 'custom'];
 
-  if (!sumoConfigTestingFramework || sumoConfigTestingFramework === null || sumoConfigTestingFramework === undefined || sumoConfigTestingFramework === "") {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'testingFramework' field missing"))
+  if (!varmutConfigTestingFramework || varmutConfigTestingFramework === null || varmutConfigTestingFramework === undefined || varmutConfigTestingFramework === "") {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'testingFramework' field missing"))
   }
 
   let detectedFrameworks = [];
 
   //User-specified testing framework
-  if (sumoConfigTestingFramework !== "auto") {
-    if (validTestingFrameworks.includes(sumoConfigTestingFramework)) {
-      detectedFrameworks.push(sumoConfigTestingFramework);
+  if (varmutConfigTestingFramework !== "auto") {
+    if (validTestingFrameworks.includes(varmutConfigTestingFramework)) {
+      detectedFrameworks.push(varmutConfigTestingFramework);
     } else {
-      throw new Error(`Unsupported testing framework "${sumoConfigTestingFramework}".`);
+      throw new Error(`Unsupported testing framework "${varmutConfigTestingFramework}".`);
     }
   }
   //Auto testing framework
@@ -190,7 +190,7 @@ function getTestingFrameworks() {
     detectedFrameworks.sort((a, b) => b.localeCompare(a));
   }
   if (detectedFrameworks.length === 0) {
-    throw new Error(chalk.red(`Cannot automatically detect testing framework used in: ${rootDir}. You can either:\n- Add a valid test configuration file (e.g., foundry.toml) to your workspace and try again, or\n- Specify a valid testing framework in your sumo-config.js`));
+    throw new Error(chalk.red(`Cannot automatically detect testing framework used in: ${rootDir}. You can either:\n- Add a valid test configuration file (e.g., foundry.toml) to your workspace and try again, or\n- Specify a valid testing framework in your varmut-config.js`));
   }
   return detectedFrameworks;
 }
@@ -229,14 +229,14 @@ function getTestsForFramework(testingFramework, testFiles) {
  * @returns the path of the contracts directory
  */
 function getContractsDir() {
-  const sumoConfigContractsDir = sumoConfig.contractsDir;
+  const varmutConfigContractsDir = varmutConfig.contractsDir;
 
-  if (!sumoConfigContractsDir || sumoConfigContractsDir === null || sumoConfigContractsDir === undefined || sumoConfigContractsDir === "") {
-    throw Error(chalk.red("Error: sumo-config.js is incomplete: 'contractsDir' field missing"))
+  if (!varmutConfigContractsDir || varmutConfigContractsDir === null || varmutConfigContractsDir === undefined || varmutConfigContractsDir === "") {
+    throw Error(chalk.red("Error: varmut-config.js is incomplete: 'contractsDir' field missing"))
   }
 
   const validContractsDirs = [
-    sumoConfigContractsDir && sumoConfigContractsDir !== "auto" ? "/" + sumoConfigContractsDir : null,
+    varmutConfigContractsDir && varmutConfigContractsDir !== "auto" ? "/" + varmutConfigContractsDir : null,
     "/contracts",
     "/src"
   ];
@@ -249,7 +249,7 @@ function getContractsDir() {
   if (foundDir) {
     return rootDir + foundDir;
   } else {
-    console.error(chalk.red("Error: No valid contract directory found in " + rootDir + ".\nPlease specify a contract directory in your sumo-config.js"));
+    console.error(chalk.red("Error: No valid contract directory found in " + rootDir + ".\nPlease specify a contract directory in your varmut-config.js"));
     process.exit(1);
   }
 }
@@ -259,14 +259,14 @@ function getContractsDir() {
  * @returns the path of the test directory
  */
 function getTestDir() {
-  const sumoConfigTestDir = sumoConfig.testDir;
+  const varmutConfigTestDir = varmutConfig.testDir;
 
-  if (!sumoConfigTestDir || sumoConfigTestDir === null || sumoConfigTestDir === undefined || sumoConfigTestDir === "") {
-    throw Error(chalk.red("Error: sumo-config.js is incomplete: 'testDir' field missing"))
+  if (!varmutConfigTestDir || varmutConfigTestDir === null || varmutConfigTestDir === undefined || varmutConfigTestDir === "") {
+    throw Error(chalk.red("Error: varmut-config.js is incomplete: 'testDir' field missing"))
   }
 
   const validTestDirs = [
-    sumoConfigTestDir && sumoConfigTestDir !== "auto" ? "/" + sumoConfigTestDir : null,
+    varmutConfigTestDir && varmutConfigTestDir !== "auto" ? "/" + varmutConfigTestDir : null,
     "/test",
     "/tests"
   ];
@@ -279,14 +279,14 @@ function getTestDir() {
   if (foundDir) {
     return rootDir + foundDir;
   } else {
-    console.error(chalk.red("Error: No valid test directory found in " + rootDir + ".\nPlease specify a test directory in your sumo-config.js"));
+    console.error(chalk.red("Error: No valid test directory found in " + rootDir + ".\nPlease specify a test directory in your varmut-config.js"));
     process.exit(1);
   }
 }
 
 /**
  * Get the SUT's build directory for the specific testing framework. 
- * If buildDir is defined in the sumo-config.js, buildDir is returned.
+ * If buildDir is defined in the varmut-config.js, buildDir is returned.
  * Otherwise, it looks for a valid buildDir in the framework's configuration file.
  * If none is available, it looks for conventional build dir paths.
  * @param {string} testingFramework - The testing framework
@@ -296,14 +296,14 @@ function getBuildDir(testingFramework) {
   let buildDir = null;
 
   //User-defined build-dir
-  if (sumoConfig.buildDir !== null && sumoConfig.buildDir !== undefined
-    && sumoConfig.buildDir !== "auto" && sumoConfig.buildDir !== "") {
-    buildDir = sumoConfig.buildDir;
+  if (varmutConfig.buildDir !== null && varmutConfig.buildDir !== undefined
+    && varmutConfig.buildDir !== "auto" && varmutConfig.buildDir !== "") {
+    buildDir = varmutConfig.buildDir;
   }
   //Framework-Config specified build dir
-  else if (sumoConfig.buildDir === "auto") {
+  else if (varmutConfig.buildDir === "auto") {
     if (testingFramework === "custom") {
-      throw new Error(chalk.red("You are using a custom test script: please specify a buildDir in your sumo-config.js"));
+      throw new Error(chalk.red("You are using a custom test script: please specify a buildDir in your varmut-config.js"));
     } else {
       let validBuildDirs = [];
       let buildPathMatch;
@@ -341,91 +341,91 @@ function getBuildDir(testingFramework) {
     }
   }
   if (buildDir === null || buildDir === undefined) {
-    console.error(chalk.red("Error: No valid " + chalk.underline(testingFramework) + " build directory found in " + rootDir + ".\nPlease compile your contracts and/or specify a valid build directory for " + testingFramework + " in your sumo-config.js"));
+    console.error(chalk.red("Error: No valid " + chalk.underline(testingFramework) + " build directory found in " + rootDir + ".\nPlease compile your contracts and/or specify a valid build directory for " + testingFramework + " in your varmut-config.js"));
     process.exit(1);
   }
   else {
     if (fs.existsSync(rootDir + "/" + buildDir)) {
       return rootDir + "/" + buildDir;
     } else {
-      console.error(chalk.red("Error: Build directory " + rootDir + "/" + buildDir + " does not exist.\nPlease compile your contracts and/or specify a valid build directory for " + testingFramework + " in your sumo-config.js"));
+      console.error(chalk.red("Error: Build directory " + rootDir + "/" + buildDir + " does not exist.\nPlease compile your contracts and/or specify a valid build directory for " + testingFramework + " in your varmut-config.js"));
       process.exit(1);
     }
   }
 }
 
 /**
- * Get the list of of paths to test files/folders to be skipped from the sumo-config.js
+ * Get the list of of paths to test files/folders to be skipped from the varmut-config.js
  * @returns the array of paths to test files/folders to be skipped
  * @throws Error if the skipTests field is missing
  */
 function getSkipTests() {
-  if (sumoConfig.skipTests === null || sumoConfig.skipTests === undefined || !sumoConfig.skipTests) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'skipTests' field missing"));
+  if (varmutConfig.skipTests === null || varmutConfig.skipTests === undefined || !varmutConfig.skipTests) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'skipTests' field missing"));
   }
-  return sumoConfig.skipTests;
+  return varmutConfig.skipTests;
 }
 
 /**
- * Get the list of paths to contract files/folders to be skipped from the sumo-config.js
+ * Get the list of paths to contract files/folders to be skipped from the varmut-config.js
  * @returns the array of paths to contract files/folders to be skipped
  * @throws Error if the skipContracts field is missing
  */
 function getSkipContracts() {
-  if (!sumoConfig.skipContracts || sumoConfig.skipContracts === null || sumoConfig.skipContracts === undefined) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'skipContracts' field missing"));
+  if (!varmutConfig.skipContracts || varmutConfig.skipContracts === null || varmutConfig.skipContracts === undefined) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'skipContracts' field missing"));
   }
-  return sumoConfig.skipContracts;
+  return varmutConfig.skipContracts;
 }
 
 /**
- * Get the minimalOperators option from the sumo-config.js
- * @returns the minimalOperators option from the sumo-config.js
+ * Get the minimalOperators option from the varmut-config.js
+ * @returns the minimalOperators option from the varmut-config.js
  * @throws Error if the minimalOperators field is missing
  */
 function getMinimalOperators() {
-  if (sumoConfig.minimalOperators === null || sumoConfig.minimalOperators === undefined) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'minimalOperators' field missing"));
+  if (varmutConfig.minimalOperators === null || varmutConfig.minimalOperators === undefined) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'minimalOperators' field missing"));
   }
-  return sumoConfig.minimalOperators;
+  return varmutConfig.minimalOperators;
 }
 
 /**
- * Get the randomSampling option from the sumo-config.js
- * @returns the randomSampling option from the sumo-config.js
+ * Get the randomSampling option from the varmut-config.js
+ * @returns the randomSampling option from the varmut-config.js
  * @throws Error if the randomSampling field is missing
  */
 function getRandomSampling() {
-  if (sumoConfig.randomSampling === null || sumoConfig.randomSampling === undefined) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'randomSampling' field missing"));
+  if (varmutConfig.randomSampling === null || varmutConfig.randomSampling === undefined) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'randomSampling' field missing"));
   }
-  return sumoConfig.randomSampling;
+  return varmutConfig.randomSampling;
 }
 
 /**
- * Get the randomMutants option from the sumo-config.js
- * @returns the randomMutants option from the sumo-config.js
+ * Get the randomMutants option from the varmut-config.js
+ * @returns the randomMutants option from the varmut-config.js
  * @throws Error if the randomMutants field is missing
  */
 function getRandomMutants() {
-  if (sumoConfig.randomMutants === null || sumoConfig.randomMutants === undefined) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'randomMutants' field missing"));
+  if (varmutConfig.randomMutants === null || varmutConfig.randomMutants === undefined) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'randomMutants' field missing"));
   }
-  return sumoConfig.randomMutants;
+  return varmutConfig.randomMutants;
 }
 
 
 /**
- * Get the testing timeout in seconds from the sumo-config.js
+ * Get the testing timeout in seconds from the varmut-config.js
  * @returns the testingTimeOutInSec
  * @throws Error if the testingTimeOutInSec field is missing
  */
 function getTestingTimeout() {
-  if (sumoConfig.testingTimeOutInSec === null || sumoConfig.testingTimeOutInSec === undefined
-    || !sumoConfig.testingTimeOutInSec) {
-    throw Error(chalk.red("Your sumo-config.js is incomplete: 'testingTimeOutInSec' field missing"));
+  if (varmutConfig.testingTimeOutInSec === null || varmutConfig.testingTimeOutInSec === undefined
+    || !varmutConfig.testingTimeOutInSec) {
+    throw Error(chalk.red("Your varmut-config.js is incomplete: 'testingTimeOutInSec' field missing"));
   }
-  return sumoConfig.testingTimeOutInSec;
+  return varmutConfig.testingTimeOutInSec;
 }
 
 /**

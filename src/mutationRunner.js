@@ -14,8 +14,8 @@ const pruner = require('./pruner')
 const testingInterface = require("./testingInterface");
 const htmlReporter = require("./htmlReport")
 
-//SuMo static configuration
-const { sumoDir, baselineDir, mutantsDir, contractsGlob, testsGlob } = utils.staticConf;
+//varmut static configuration
+const { varmutDir, baselineDir, mutantsDir, contractsGlob, testsGlob } = utils.staticConf;
 const randomSamplingEnabled = utils.getRandomSampling();
 var testingFrameworks = [];
 var contractsDir, testDir, buildDir;
@@ -41,8 +41,8 @@ const mutGen = new mutationGenerator.MutationGenerator(allOperatorInstances);
 function setup(callback) {
   reporter.logSetupCheck();
 
-  //Setup sumo dir
-  if (!fs.existsSync(sumoDir)) { fs.mkdirSync(sumoDir); }
+  //Setup varmut dir
+  if (!fs.existsSync(varmutDir)) { fs.mkdirSync(varmutDir); }
   utils.setupResultsDir();
 
   //Get configurable directories and testing frameworks

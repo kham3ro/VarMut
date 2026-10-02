@@ -1,15 +1,15 @@
 {
-  "author": "Morena Barboni",
-  "name": "@morenabarboni/sumo",
-  "version": "3.2.1",
-  "description": "A mutation testing tool for Ethereum smart contracts",
+  "author": "Roozbeh Khamseh",
+  "name": "@kham3ro/VarMut",
+  "version": "0.1.3",
+  "description": "Evidence-Driven Mutation Testing Tool for Solidity Smart Contracts based on Fault Model",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator.git"
+    "url": "https://github.com/kham3ro/VarMut.git"
   },
   "main": "index.js",
   "bin": {
-    "sumo": "./index.js"
+    "varmut": "./index.js"
   },
   "keywords": [
     "mutation testing",

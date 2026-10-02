@@ -1,217 +1,129 @@
-# SuMo
-SuMo is a mutation testing tool for Solidity Smart Contracts. 
+# VarMut: Evidence-Driven Mutation Testing Tool for Solidity Smart Contracts
 
-SuMo was designed to run mutation testing on Solidity projects in a NodeJS environment. It can run test using [Hardhat](https://hardhat.org/), [Brownie](https://github.com/eth-brownie/brownie)  and [Forge](https://github.com/foundry-rs/foundry), hybrid test suites, and custom test scripts.
+[![Solidity](https://img.shields.io/badge/Solidity-%3E%3D0.8.0-blue.svg)](https://soliditylang.org/)
+[![Hardhat](https://img.shields.io/badge/Built%20with-Hardhat-yellow.svg)](https://hardhat.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+**VarMut** is an automated, evidence-driven mutation testing framework engineered specifically for Solidity smart contracts within the Ethereum Virtual Machine (EVM) ecosystem. Built natively on top of the Hardhat development framework, VarMut bridges empirical software engineering with compiler-aware Abstract Syntax Tree (AST) mutations.
 
-# Table of Contents
-* [Installation](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator#installation)
-* [Configuration](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator#configuration-)
-* [CLI Usage](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator#cli-usage)
-* [Mutation Operators](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator#mutation-operators-)
-* [Publications](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator#publications)
+Unlike traditional mutation tools that indiscriminately inject superficial grammar substitutions, VarMut operates on an **Evidence-Driven Smart Contract Fault Model (ED-SCFM)** derived from real-world vulnerabilities reported in the National Vulnerability Database (NVD) and structured via Orthogonal Defect Classification (ODC). To resolve the combinatorial explosion of mutant generation, VarMut introduces a **Pre-Compilation Semantic Filter** that statically eliminates compiler-incompatible (stillborn) mutants, slashing overall execution time by up to 90% while yielding realistic mutation scores.
 
-# Installation
+---
 
-To install sumo run ```npm install @morenabarboni/sumo```
+## Table of Contents
+- [VarMut: Evidence-Driven Mutation Testing Tool for Solidity Smart Contracts](#varmut-evidence-driven-mutation-testing-tool-for-solidity-smart-contracts)
+  - [Table of Contents](#table-of-contents)
+  - [Key Features](#key-features)
+  - [Architecture \& Workflow](#architecture--workflow)
+  - [Installation](#installation)
+- [Enable specific operators or all](#enable-specific-operators-or-all)
+- [Disable specific operators](#disable-specific-operators)
+- [Export mutated .sol source code to ./mutants/ for manual inspection](#export-mutated-sol-source-code-to-mutants-for-manual-inspection)
+- [Execute full mutation testing workflow](#execute-full-mutation-testing-workflow)
+- [Run a specific subset or partition of mutants](#run-a-specific-subset-or-partition-of-mutants)
+- [Restore the original contracts after an interrupted run](#restore-the-original-contracts-after-an-interrupted-run)
 
-# Configuration ⚙️
-Before using SuMo you must specify your desired configuration in a [sumo-config.js](https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator/blob/master/src/sumo-config.js) in the root directory of your project. The ```sumo-config.js``` is automatically generated when SuMo is installed.
+---
 
-Here's a simple example of ```sumo-config.js```:
+## Key Features
+
+- **Evidence-Driven Fault Injection:** Grounded in a comprehensive fault model synthesized from real-world CVE mining and ODC taxonomy.
+- **Pre-Compilation Semantic Filter:** Static AST-level semantic checking to discard stillborn and trivially invalid mutants before invoking the Solidity compiler (`solc`).
+- **Targeted Operator Suite:** A curated collection of **20 AST mutation operators** (5 pioneering domain-specific operators and 15 complementary operators).
+- **Hardhat Native:** Seamlessly integrates with modern smart contract pipelines (`hardhat test`, Mocha/Chai, and TypeScript/JavaScript test runners).
+- **Significant Performance Gains:** Reduces the active mutant space by 26% to 61% compared to traditional tools like varmut and Vertigo, drastically minimizing execution timeouts and gas simulation overhead.
+
+---
+
+## Architecture & Workflow
+
+```plaintext
++---------------------------------------------+
+|        Target Solidity Source Files         |
++----------------------+----------------------+
+                       |
+                       v
++---------------------------------------------+
+|          AST Generation & Parsing           |
++----------------------+----------------------+
+                       |
+                       v
++---------------------------------------------+
+|       Pre-Compilation Semantic Filter       | ---> [Discard Stillborn Mutants]
++----------------------+----------------------+
+                       | (Valid Transformation Candidates)
+                       v
++---------------------------------------------+
+|       VarMut 20-Operator AST Mutator        |
++----------------------+----------------------+
+                       |
+                       v
++---------------------------------------------+
+|       Hardhat Test Runner & Sandbox         |
++----------------------+----------------------+
+                       |
+                       v
++---------------------------------------------+
+|  Reports: results/mutations.json & HTML UI  |
++---------------------------------------------+
 
 ```
-module.exports = {  
-      buildDir: "auto",                               //build directory of the SUT (auto detect)
-      contractsDir: "auto",                           //contract directory of the SUT (auto detect)
-      testDir: "auto",                                //test directory of the SUT (auto detect)
-      skipContracts: ["interfaces", "mock", "test"],  // Relative paths from contractsDir
-      skipTests: [],                                  // Relative paths from testsDir
-      testingFramework: "auto",                      //testing framework (auto detect)
-      minimalOperators: false,                       // use minimal mutation rules
-      randomSampling: false,                         //use random mutant sampling
-      randomMutants: 100,                            //if random sampling is enabled, generate 100 mutants max
-      testingTimeOutInSec: 500                       //testing time-out for a mutant
+## Installation
+
+Ensure you have [Node.js](https://nodejs.org/) (>= 18.x) and [Git](https://git-scm.com/) installed.
+
+Clone the repository and install dependencies:
+
+```bash
+git clone [https://github.com/YOUR_USERNAME/VarMut.git](https://github.com/YOUR_USERNAME/VarMut.git)
+cd VarMut
+npm install
+
+Verify your Hardhat setup: npx hardhat compile
+
+ConfigurationVarMut can be configured via varmut-config.js in your project's root directory:JavaScriptmodule.exports = {
+  contractsDir: "contracts",               // Directory containing Solidity source files
+  testDir: "test",                         // Directory containing test suites
+  buildDir: "artifacts",                   // Compilation output artifacts directory
+  skipContracts: ["mock", "interfaces"],   // Paths/contracts to exclude from mutation
+  skipTests: [],                           // Test files to exclude from execution
+  testingFramework: "hardhat",             // Primary testing environment
+  semanticFilter: true,                    // Enable pre-compilation stillborn filtering
+  randomSampling: false,                   // Random mutant sampling (optional)
+  randomMutants: 100,                      // Cap on sampled mutants if enabled
+  testingTimeOutInSec: 300                 // Test execution timeout per mutant
+};
+CLI UsageOperator ManagementInspect and configure active mutation operators:Bash# List all registered operators and their current status
+npx varmut list
+
+# Enable specific operators or all
+npx varmut enable
+npx varmut enable PRand REENT-ORDER SIG-VERIF
+
+# Disable specific operators
+npx varmut disable AOR FVR
+Mutant Generation & InspectionBash# Analyze target contracts and dry-run mutant generation (without running tests)
+npx varmut lookup
+
+# Export mutated .sol source code to ./mutants/ for manual inspection
+npx varmut mutate
+Test Execution & AssessmentBash# Run baseline pre-test suite to confirm original code passes 100% of tests
+npx varmut pretest
+
+# Execute full mutation testing workflow
+npx varmut test
+
+# Run a specific subset or partition of mutants
+npx varmut test <startHash> <endHash>
+
+# Restore the original contracts after an interrupted run
+npx varmut restore
+Results are exported synchronously to:results/mutations.json: Detailed mutant status (Killed, Lived, Timed-out).results/index.html: Interactive browser report with mutant diff viewer.Mutation Operators Catalog (20 Operators)VarMut implements 20 AST-level mutation operators categorized into domain-specific security operators and standard structural operators.1. Domain-Specific & Novel OperatorsCodeOperator NameTarget AST NodeRoot-Cause Fault TargetTransformation SummaryPRandPredictable Randomness MutationMemberAccess / FunctionCallWeak PRNG / Block Env ExploitsReplaces secure entropy or VRF calls with predictable blockchain variables (block.timestamp, block.prevrandao).REENT-ORDERReentrancy Sequence & Guard MutatorBlock.statements / ModifierCEI Violation / ReentrancyShifts external calls ahead of state variable writes, or strips nonReentrant locks.SIG-VERIFSignature Verification MutatorFunctionCall (ecrecover) / requireCryptographic Verification BypassBypasses ecrecover / ECDSA signer validation checks to simulate unauthorized access.UNINIT-UPGUpgradeable Initialization MutatorConstructor / ModifierProxy Logic HijackingDeletes _disableInitializers() lock in logic contract constructors or removes initializer.UCRUnchecked Call Result MutatorExpressionStatementSilent Low-Level Call FailuresRemoves return value checks (bool success) from low-level address.call interactions.2. Complementary & Standard OperatorsCodeOperator NameTarget AST NodeDescription & Mutation BehaviorAORArithmetic Operator ReplacementBinaryOperationSwaps arithmetic operators (+, -, *, /, %).RORRelational Operator ReplacementBinaryOperationInverts comparison operators (<, <=, >, >=, ==, !=).CORConditional Operator ReplacementBinaryOperationSubstitutes boolean logical operators (&& <-> ||).BLRBoolean Literal ReplacementBooleanLiteralInverts boolean constants (true <-> false).UORUnary Operator ReplacementUnaryOperationInverts unary operations (++ <-> --, strips !).IVRInitialization Value ReplacementVariableDeclarationRemoves explicit initial value assignments in declarations.AVRAssignment Value ReplacementAssignmentRemoves assignment statements or zeroes target variables.MODModifier Omission / DeletionModifierInvocationStrips access-control modifiers (e.g., onlyOwner).MORModifier Order ReplacementFunctionDefinitionReorders multiple chained modifier invocations.FVRFunction Visibility ReplacementFunctionDefinitionPromotes restricted visibility (internal/private to public).RSDReturn Statement DeletionReturnStatementDeletes return statements in functions with default/named returns.RVSReturn Value SubstitutionReturnStatementSubstitutes returned expressions with default literals (false, 0).SFRSafeMath Function ReplacementFunctionCallConverts SafeMath library calls to unchecked raw math.LSCLoop Statement ChangeForStatement / WhileStatementMutates loop boundary expressions to bypass iteration execution.SORStatement Order ReplacementBlock.statementsSwaps adjacent topologically independent statements.Benchmarks & Experimental DatasetsThe repository includes curated benchmark suites under benchmarks/ used to evaluate VarMut alongside baseline tools (varmut and Vertigo):Crowdfunding & Milestone Campaigns: Multi-contract systems featuring stateful pledge, refund, and milestone mechanisms.DeFi & Token Protocols: Realistic ERC-20 / Vault implementations testing access control, proxy upgrades, and arithmetic integrity.Research CitationIf you use VarMut or its underlying Evidence-Driven Fault Model in your academic research, please cite:Code snippet@mastersthesis{khamseh2026varmut,
+  author       = {Roozbeh Khamseh},
+  title        = {Fault Model and Corresponding Mutation Operators for Testing Smart Contracts},
+  school       = {Faculty of Computer Science and Engineering, Shahid Beheshti University},
+  year         = {2026},
+  address      = {Tehran, Iran},
+  note         = {Supervised by Dr. Hassan Haghighi, Advised by Dr. Maedeh Moshref Dehkordi}
 }
-```
-
-### 1) SUT directories
- SuMo will try to automatically find your project directories based on standard naming conventions (e.g., /contracts and /test). These can be overriden in the ```sumo-config.js``` file. Contracts and test files/folders to be ignored by SuMo can be specified as well.
-
-| Field | Description | Default Value |
-| ------ | ------ |  :----: |
-| ```contractsDir```| relative path to the directory of the contracts to be mutated | ```auto``` |
- | ```testDir```| relative path to the directory of the tests to be evaluated | ```auto``` | 
- | ```buildDir```| relative path to the directory of the compilation artifacts | ```auto``` |  
- | ```skipContracts```| blacklist of relative paths to contract files (or folders) | ```["interfaces", "mock", "test"]``` | 
-| ```skipTests```| blacklist of relative paths to test files (or folders) | ```[]``` |
-
-### 2) Testing Frameworks Configuration 🔗
-
-These fields allow to customize the testing frameworks used by SuMo.
-
-By default, ```testingFramework``` is set to ```auto```: SuMo will automatically select the testing framework(s) to be used based on the configuration files (e.g., ```foundry.toml```) present in your workspace. If multiple configuration files are found, SuMo will try to run a hybrid testing process.
-
-| Field | Description | Available Options | Default Value | 
-| ------ | ------ | ------ |   :----: |
-| ```testingFramework```| the testing framework to be used for compiling and testing the smart contracts | ```auto```, ```brownie```, ```forge```, ```hardhat```, ```custom```  | ```auto``` |
-
-#### **Brownie**
-When choosing ```brownie```:
-* SuMo will rely on a local/global ```brownie``` installation;
-* The smart contracts will be compiled with a minimal compile command  (e.g., ```brownie compile``` );
-* The smart contracts will be tested with a minimal test command and (optionally) by a list of test files to be executed (e.g., ```brownie test ...testFiles --exitfirst```) .
-
-#### **Forge**
-When choosing ```forge``` :
-* SuMo will rely on the global installation of ```foundry```;
-* The smart contracts will be compiled with a minimal compile command  (e.g., ```forge build```);
-* The smart contracts will be tested with a minimal test command and (optionally) by a list of test files to be executed (e.g., ```forge test ...testFiles --fail-fast```).
-* Make sure that your ```forge``` installation is up-to-date to enable ```--fail-fast```.
-
-#### **Custom**
-
-If you set ```testingFramework``` to ```custom```, SuMo will invoke the ```compile``` and ```test``` script defined in your ```package.json```. This allows you to customize both scripts and have more control over the testing process. For example, you can define the scripts as follows:
-```
-//package.json
- scripts: {
-    compile: "hardhat compile",
-    test "hardhat test --bail && forge test --fail-fast"
- }
-
-//sumo-config.js
- project: {
-    buildDir: "artifacts",
- }
-```
-Additionally, you must also explicitly define a ```buildDir``` (matching your compile command) in your sumo-config.js.
-
-```
-⚠️ Limitations of Custom Test Scripts:
-     * buildDir: must be explicitly specified it in the sumo-config.js
-     * skipTests: will be ignored. You have to specify them in your custom script.
-```
-
-### 3) Mutation Testing Process Configuration
-These fields allow you to further customize the mutation testing process:
-
-
-| Field | Description | Default Value |
-| ------ | ------ |  :----: |
-| ```minimalOperators```| use minimal mutation rules | ```false``` |
-| ```randomSampling```| use Random Mutant Sampling | ```false``` |    
-| ```randomMutants```| the maximum number of mutants to be tested (only if ```randomSampling``` is enabled) | ```100``` |    
-| ```testingTimeOutInSec```| seconds after which a mutant is marked as timed-out during testing | ```500``` |  
-
-# CLI Usage
-
-## Selecting the Mutation Operators
-Before starting the mutation process you can choose which mutation operators to use:
-
-| Command       | Description                        | Usage                    | Example                             |
-|---------------|------------------------------------|--------------------------|-------------------------------------|
-| `list`    | Shows the enabled mutation operators. | `npx/yarn sumo list` | `$ npx sumo list`  |
-| `enable`    | Enables one or more mutation operators. If no operator IDs are specified, all of them are enabled. | `npx/yarn sumo enable [...ID]` | `$ npx sumo enable` <br> `$ npx sumo enable AOR BOR` |
-| `disable`    | Disables one or more mutation operators. If no operator IDs are specified, all of them are disabled. | `npx/yarn sumo disable [...ID]` | `$ npx sumo disable` <br> `$ npx sumo disable FVR` |
-
-## Viewing the available mutations
-
-| Command       | Description                        | Usage                    | Example                             |
-|---------------|------------------------------------|--------------------------|-------------------------------------|
-| `lookup`    | Generates the mutations and creates reports without starting mutation testing. | `npx/yarn sumo lookup` | `$ npx sumo lookup` |
-| `mutate`    | Generates the mutations and saves a copy of each `.sol` mutant to  to ./sumo/mutants. | `npx/yarn sumo mutate` | `$ npx sumo mutate` |
-
-## Running Mutation Testing
-
-
-| Command       | Description                        | Usage                    | Example                             |
-|---------------|------------------------------------|--------------------------|-------------------------------------|
-| `pretest`    | Runs the test suite on the original smart contracts to check if all tests pass and can be successfully evaluated. Pretest is automatically run when `sumo test` is executed. | `npx/yarn sumo pretest` | `$ npx sumo pretest` |
-| `test`    | Starts the mutation testing process. You can also choose a single mutant / an interval of mutants to be tested by sepcifying ```<startHash>``` and (optionally) ```<endHash>```.| `npx/yarn sumo test <startHash> <endHash>` | `$ npx sumo test` <br> `$ npx sumo test mbc5e8f56 mbg5t86o6`|
-| `restore`    | Restores the SUT files to a clean version. This should be executed if you suddenly interrupt the mutation process. Note that the restore command overwrites your codebase with the files stored in the ```sumo/baseline``` folder. If you need to restore the project files, make sure to do so before performing other operations as the baseline is automatically refreshed on subsequent preflight or test runs.| `$ npx/yarn sumo restore` | `$ npx sumo restore`|
-
-## Viewing the results
-SuMo automatically creates a ```sumo\results``` folder in the root directory of the project with the following reports: <br/>
-* ```mutations.json```: List of mutations in json format, synchronoysly updated during testing. 
-* ```index.html```: A simple web display of the results (you can view this using VSCode extensions like ```Live Server```). From here, you can also download a csv with the results.
-* ```\mutants```: Folder with mutated ```.sol``` source files (only if generated with ```sumo mutate```)
-
-# Mutation Operators 👾
-
-SuMo includes the following Traditional and Solidity-specific operators. Note that not all mutation operators are enabled by default.
-
-## Traditional Mutation Operators
-
-| Operator | Name | Mutation Example | Enabled by Default | Minimal Available |
-| ------ | ------ |  ------ |  ------ | :----: |
-| ACM| Argument Change of overloaded Method call | ```overloadedFunc(a,b);``` &rarr; ```overloadedFunc(a,b,c);``` |   Y |  N |
-| AOR | Assignment Operator Replacement | ```+= ``` &rarr;  ```=``` |   Y |  N |
-| BCRD | Break and Continue Replacement <br /> and Deletion | ```break``` &rarr; <br /> ```continue``` &rarr; ```break``` |   Y |  N |
-| BLR | Boolean Literal Replacement | ```true``` &rarr; ```false``` |   Y |  N |
-| BOR | Binary Operator Replacement | ```+``` &rarr; ```-``` <br /> ```<``` &rarr; ```>=``` |   Y | Y |
-| CBD | Catch Block Deletion | ```catch{}``` &rarr; ``` ``` |   Y |  N |
-| CSC | Conditional Statement Change | ```if(condition)``` &rarr; ```if(false)``` <br /> ```else{}``` &rarr; ``` ```  |   Y |  N |
-| ER | Enum Replacemet |  ```enum.member1``` &rarr; ```enum.member2``` |   Y | Y |
-| ECS | Explicit Conversion to Smaller type | ```uint256``` &rarr; ```uint8``` |   Y |  N |
-| FCD | Function Call Deletion | ```foo()``` &rarr; ``` ```|  Y | N |
-| HLR | Hexadecimal Literal Replacement | ```hex\"01\"``` &rarr; ```hex\"random\"```|   Y |  N |
-| ILR | Integer Literal Replacement | ```1``` &rarr; ```0``` |   Y |  N |
-| LCS | Loop Statement Change | ```while(condition)``` &rarr; ```while(false)``` |   Y |  N |
-| OLFD | Overloaded Function Deletion | ```function overloadedF(){}``` &rarr; ``` ``` |   Y |  N |
-| ORFD | Overridden Function Deletion | ```function f() override {}``` &rarr; ``` ``` |   Y |  N |
-| SKR | Super Keyword Replacement | ```x = getData()``` &rarr; ```x = super.getData()``` |   Y |  N |
-| SLR | String Literal Replacement | ```"string"``` &rarr; ```""```  |   Y |  N |
-| UORD | Unary Operator Replacement and Deletion | ```++``` &rarr; ```--```  <br /> ```!``` &rarr; ``` ``` |  Y | Y |
-
-
-## Solidity Mutation Operators
-| Operator | Name | Mutation Example |Enabled by Default | Minimal version available |
-| ------ | ------ |  ------ | ------ | :----: |
-| AVR | Address Value Replacement | ```0x67ED2e5dD3d0...``` &rarr; ``` address.this()```|   Y |  Y |
-| CCD | Contract Constructor Deletion | ```constructor(){}``` &rarr; ``` ``` |   Y |  N |
-| DLR | Data Location Keyword Replacement | ```memory``` &rarr; ```storage``` | N | N |
-| DOD | Delete Operator Deletion | ```delete``` &rarr; |   Y |  N |
-| ETR | Ether Transfer function Replacement | ```delegatecall()``` &rarr; ```call()``` |   Y | Y |
-| EED |  Event Emission Deletion |  ```emit Deposit(...)``` &rarr; ```/*emit Deposit(...)*/``` |   Y |  N |
-| EHD | Exception Handling Deletion | ```require(...)``` &rarr; ```/*require(...)*/``` |  Y |  N |
-| FVR | Function Visibility Replacement | ```function f() public``` &rarr; ```function f() private``` |  N | Y |
-| GVR | Global Variable Replacement | ```msg.value()``` &rarr; ```tx.gasprice()``` |   Y | Y |
-| MCR | Mathematical and Cryptographic <br /> function Replacement | ```addmod``` &rarr; ```mulmod``` <br /> ```keccak256``` &rarr; ```sha256``` |   Y | Y |
-| MOD | Modifier Deletion | ```function f() onlyOwner``` &rarr; ```function f()``` |   Y | Y |
-| MOI | Modifier Insertion | ```function f()``` &rarr; ```function f() onlyOwner``` |  N | Y |
-| OMD | Overridden Modifier Deletion | ```modifier m() override {}``` &rarr; ``` ``` |   Y |  N |
-| PKD | Payable Keyword Deletion | ```function f() payable``` &rarr; ```function f()``` |   Y |  N |
-| RSD | Return Statement Deletion | ```return amount;``` &rarr; ```//return amount;``` |   Y |  N |
-| RVS | Return Values Swap | ```return (1, "msg", 100);``` &rarr; ```return (100, "msg", 1);``` |   Y | Y |
-| SCD | Selfdestruct Call Deletion |  ```selfdestruct();``` &rarr; ```//selfdestruct();``` |   Y |  N |
-| SFR | SafeMath Function Replacement | ```SafeMath.add``` &rarr; ```SafeMath.sub``` |   Y | Y |
-| SCEC | Switch Call Expression Casting | ```Contract c = Contract(0x86C9...);``` &rarr; ```Contract c = Contract(0x67ED...); ``` |   Y |  N |
-| TOR | Transaction Origin Replacement | ```msg.sender``` &rarr; ```tx.origin``` |   Y |  N |
-| VUR | Variable Unit Replacement | ```wei``` &rarr; ```ether```  <br /> ```minutes``` &rarr; ```hours``` |   Y | Y |
-| VVR | Variable Visibility Replacement | ```uint private data;``` &rarr; ```uint public data;``` |  N | Y |
-
-
-## Minimal Mutation Rules
-Some mutation operators foresee a **minimal** version:
-* The **extended** operators generate a more comprehensive set of mutants. These guarantee a more in-depth test adequacy assessment, but they can generate more than one replacement per target (e.g., 
-```+``` is mutated in both ```-``` and ```*```), which can lead to longer execution times.
-* The **minimal** operators define simplified rules that only inject one replacement per target (e.g., ```+``` is mutated in ```-```), limiting the generation of subsumed mutants and speeding up the testing process.
-
-By default, SuMo employs the **extended** operators. However, you can enable the minimal rules in the ```sumo-config.js``` file.
-
-# Publications
-
-To cite SuMo, please use the following:
-
-```
-@article{BARBONI2022111445,
-  title = {SuMo: A mutation testing approach and tool for the Ethereum blockchain},
-  journal = {Journal of Systems and Software},
-  volume = {193},
-  pages = {111445},
-  year = {2022},
-  issn = {0164-1212},
-  doi = {https://doi.org/10.1016/j.jss.2022.111445},
-  author = {Morena Barboni and Andrea Morichetta and Andrea Polini}
-}
-```
+LicenseThis project is licensed under the MIT License - see the LICENSE file for details.

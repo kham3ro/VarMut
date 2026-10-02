@@ -2,7 +2,7 @@ const appRoot = require('app-root-path');
 const rootDir = appRoot.toString().replaceAll("\\", "/");
 const fs = require('fs')
 
-const sumoconfig =
+const varmutconfig =
     `module.exports = {  
       buildDir: "auto",
       contractsDir: "auto",
@@ -16,6 +16,6 @@ const sumoconfig =
       testingTimeOutInSec: 500  
 }`;
 
-if (!fs.existsSync(rootDir + "/sumo-config.js")) {
-    fs.writeFileSync(rootDir + "/sumo-config.js", sumoconfig)
+if (!fs.existsSync(rootDir + "/varmut-config.js")) {
+    fs.writeFileSync(rootDir + "/varmut-config.js", varmutconfig)
 }

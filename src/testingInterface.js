@@ -58,7 +58,7 @@ function spawnCompile(testingFrameworks) {
  * If multiple testing frameworks are specified, it builds a hybrid test script
  * @param {string[]} testingFrameworks The list of testing framework(s) used within the SUT
  * @param {string[]} testFiles The list of test files to be run
- * @param {number} [testingTimeOutInSec=500] The timeout duration for the testing process in seconds retrieved from the sumo-config
+ * @param {number} [testingTimeOutInSec=500] The timeout duration for the testing process in seconds retrieved from the varmut-config
  * @returns {number} Status code indicating the result of the testing process
  * @throws {Error} If an invalid testing framework is selected or if there's an issue during the testing process
  */

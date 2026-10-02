@@ -6,7 +6,7 @@ const sha1 = require('sha1')
 const path = require('path')
 // Internal modules
 const utils = require('./utils')
-//SuMo static configuration
+//varmut static configuration
 const { mutantsDir, baselineDir } = utils.staticConf;
 
 
