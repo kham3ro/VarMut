@@ -1,0 +1,41 @@
+{
+  "author": "Morena Barboni",
+  "name": "@morenabarboni/sumo",
+  "version": "3.2.1",
+  "description": "A mutation testing tool for Ethereum smart contracts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MorenaBarboni/SuMo-SOlidity-MUtator.git"
+  },
+  "main": "index.js",
+  "bin": {
+    "sumo": "./index.js"
+  },
+  "keywords": [
+    "mutation testing",
+    "solidity",
+    "smart contract"
+  ],
+  "scripts": {
+    "postinstall": "node ./scripts/init.js"
+  },
+  "dependencies": {
+    "@solidity-parser/parser": "0.19.0",
+    "app-root-path": "3.1.0",
+    "chalk": "^4.1.2",
+    "diff": "7.0.0",
+    "fs-extra": "11.3.0",
+    "glob": "8.1.0",
+    "postinstall": "^0.8.0",
+    "recursive-copy": "2.0.14",
+    "sha1": "^1.1.1",
+    "yargs": "^17.5.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomiclabs/hardhat-truffle5": "^2.1.2",
+    "@nomiclabs/hardhat-web3": "^2.1.2",
+    "hardhat": "^2.29.1",
+    "web3": "^1.10.0"
+  }
+}
